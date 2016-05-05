@@ -1,14 +1,14 @@
 from tqdm import trange
 
-testUntil = 1048576
-EvenlyDivisibleBy = 10
+testUntil = 2**20
+EvenlyDivisibleBy = 20
 
 
-def binary_digit_to_encoded_factor(digitToUnencode):
+def binary_digit_to_encoded_factor(binaryDigit):
     encodedFactor = 1
-    lengthOfBinaryString = len(str(bin(digitToUnencode)))-2
+    lengthOfBinaryString = len(str(bin(binaryDigit)))-2
     for iter in range(1, lengthOfBinaryString+1):
-        if binary_number_has_1_in_spot(digitToUnencode,iter):
+        if binary_number_has_1_in_spot(binaryNum=binaryDigit,spot=iter):
             encodedFactor *= (iter+1)
     return encodedFactor
 
@@ -25,11 +25,11 @@ def the_answer_is(answer):
     quit()
 
 
-for eachNum in trange(1, testUntil+1):
+for binaryDigit in trange(1, testUntil+1):
     for eachDivisor in range(1, EvenlyDivisibleBy+1):
-        if binary_digit_to_encoded_factor(eachNum) % eachDivisor != 0:
+        if binary_digit_to_encoded_factor(binaryDigit) % eachDivisor != 0:
             break
         elif eachDivisor == EvenlyDivisibleBy:
-            the_answer_is(binary_digit_to_encoded_factor(eachNum))
+            the_answer_is(binary_digit_to_encoded_factor(binaryDigit))
     pass
 print "No answer found"
