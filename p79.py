@@ -22,6 +22,9 @@ class test_functions(unittest.TestCase):
         self.assertEqual(common_digits(620, 762), [[0, 1], [1, 2]])
         self.assertEqual(common_digits(129, 620), [[1, 1]])
 
+    def test_possible_combinations(self):
+        self.assertEqual(possible_combinations(123, 200), [12003, 12030, 12300])
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=1)
