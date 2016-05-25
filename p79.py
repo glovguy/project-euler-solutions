@@ -1,4 +1,5 @@
 import unittest
+from sets import Set
 
 f = open('p79keylog.txt', 'r')
 
@@ -10,7 +11,7 @@ for line in f:
 class DigitSeries(object):
     """Understands a series of digits"""
     def __init__(self, digits):
-        self.nums = digits
+        self.nums = int(digits)
         self.digits = str(digits)
 
     def __hash__(self):
@@ -45,7 +46,14 @@ class DigitSeries(object):
         return combinations
 
     def shuffle_in(self, other):
-        return [DigitSeries(int(self.digits + other.digits))]
+        setOfShuffledDigitSeries = []
+        spotsAvailable = len(self.digits) + 1
+        for eachDigit in range(spotsAvailable):
+            oneShuffle = self.digits[:eachDigit] + other.digits + self.digits[eachDigit:]
+            setOfShuffledDigitSeries.append(DigitSeries(oneShuffle))
+        setOfShuffledDigitSeries = remove_duplicate_entries(setOfShuffledDigitSeries)
+        return Set(setOfShuffledDigitSeries)
+
 
 
 class DigitPair(object):
@@ -72,6 +80,15 @@ class DigitPair(object):
         return prefix + sharedDigit + suffix
 
 
+def remove_duplicate_entries(myList):
+    outputList = []
+    for eachItem in myList:
+        if eachItem not in outputList:
+            outputList.append(eachItem)
+    return outputList
+
+
+
 # def is_compatible(firstCommonDigit, secondCommonDigit):
 #     if firstCommonDigit[0] == secondCommonDigit[0] or firstCommonDigit[1] == secondCommonDigit[1]:
 #         return False
@@ -87,7 +104,13 @@ class test_functions(unittest.TestCase):
         self.assertEqual(DigitSeries(129).common_digits(DigitSeries(620)), [DigitPair(1, 1)])
 
     def test_shuffle_in(self):
-        self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(1)), [DigitSeries(11)])
+        self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(1)), Set([DigitSeries(11)]))
+        self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(2)), Set([DigitSeries(21), DigitSeries(12)]))
+        self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(2)), Set([DigitSeries(21), DigitSeries(12)]))
+
+    def test_remove_duplicate_entries(self):
+        self.assertEqual(remove_duplicate_entries(['a', 'a']), ['a'])
+        self.assertEqual(remove_duplicate_entries([DigitSeries(11), DigitSeries(11)]), [DigitSeries(11)])
 
     # def test_possible_combinations(self):
     #     self.assertEqual(DigitSeries(123).possible_combinations(DigitSeries(300)), [DigitSeries(12300)])
