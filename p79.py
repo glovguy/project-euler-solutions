@@ -46,14 +46,13 @@ class DigitSeries(object):
         return combinations
 
     def shuffle_in(self, other):
-        setOfShuffledDigitSeries = []
+        setOfShuffledDigitSeries = set()
         spotsAvailable = len(self.digits) + 1
         for eachDigit in range(spotsAvailable):
             oneShuffle = self.digits[:eachDigit] + other.digits + self.digits[eachDigit:]
-            setOfShuffledDigitSeries.append(DigitSeries(oneShuffle))
+            setOfShuffledDigitSeries = setOfShuffledDigitSeries | {DigitSeries(oneShuffle)}
         setOfShuffledDigitSeries = remove_duplicate_entries(setOfShuffledDigitSeries)
-        return Set(setOfShuffledDigitSeries)
-
+        return setOfShuffledDigitSeries
 
 
 class DigitPair(object):
@@ -81,13 +80,11 @@ class DigitPair(object):
 
 
 def remove_duplicate_entries(myList):
-    outputList = []
+    outputList = set()
     for eachItem in myList:
         if eachItem not in outputList:
-            outputList.append(eachItem)
+            outputList = outputList | {eachItem}
     return outputList
-
-
 
 # def is_compatible(firstCommonDigit, secondCommonDigit):
 #     if firstCommonDigit[0] == secondCommonDigit[0] or firstCommonDigit[1] == secondCommonDigit[1]:
@@ -96,7 +93,37 @@ def remove_duplicate_entries(myList):
 #     secondSlope = secondCommonDigit[1] - secondCommonDigit[0]
 
 
-class test_functions(unittest.TestCase):
+class Weaving(object):
+    def __init__(self, jumpList, maxJumps):
+        self.jumpList = jumpList
+        self.maxJumps = maxJumps
+
+    def __hash__(self):
+        return hash(frozenset(self.jumpList))
+
+    def __eq__(self, other):
+        if type(other) is not Weaving: return False
+        return self.jumpList == other.jumpList and self.maxJumps == other.maxJumps
+
+    def __str__(self):
+        strRep = ''
+        for eachSpot in self.jumpList:
+            strRep = strRep + str(eachSpot) + '~'
+        strRep += '(' + str(self.maxJumps) + ')'
+        return strRep
+
+    def __add__(self, other):
+        return self.increment(other, 0)
+
+    def increment(self, amount, spot):
+        self.jumpList[spot] += amount
+        while self.jumpList[spot] >= self.maxJumps:
+            self.increment(1, spot + 1)
+            self.jumpList[spot] -= self.maxJumps
+        return self
+
+
+class TestFunctions(unittest.TestCase):
 
     def test_common_digits(self):
         self.assertEqual(DigitSeries(729).common_digits(DigitSeries(316)), [])
@@ -104,17 +131,31 @@ class test_functions(unittest.TestCase):
         self.assertEqual(DigitSeries(129).common_digits(DigitSeries(620)), [DigitPair(1, 1)])
 
     def test_shuffle_in(self):
-        self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(1)), Set([DigitSeries(11)]))
-        self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(2)), Set([DigitSeries(21), DigitSeries(12)]))
-        self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(2)), Set([DigitSeries(21), DigitSeries(12)]))
+        self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(1)), set([DigitSeries(11)]))
+        self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(2)), set([DigitSeries(21), DigitSeries(12)]))
+        self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(2)), set([DigitSeries(12), DigitSeries(21)]))
+        self.assertEqual(DigitSeries(11).shuffle_in(DigitSeries(2)),
+                         set([DigitSeries(112), DigitSeries(121), DigitSeries(211)]))
+        self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(22)),
+                         set([DigitSeries(122), DigitSeries(212), DigitSeries(221)]))
 
     def test_remove_duplicate_entries(self):
-        self.assertEqual(remove_duplicate_entries(['a', 'a']), ['a'])
-        self.assertEqual(remove_duplicate_entries([DigitSeries(11), DigitSeries(11)]), [DigitSeries(11)])
+        self.assertEqual(remove_duplicate_entries(set(['a', 'a'])), set(['a']))
+        self.assertEqual(remove_duplicate_entries(set([DigitSeries(11), DigitSeries(11)])), set([DigitSeries(11)]))
+
+    def test_encoded_weaving(self):
+        testWeaving = Weaving([1, 0, 0], 3)
+        criticalWeaving = Weaving([2, 0, 0], 3)
+        self.assertEqual(testWeaving, Weaving([1, 0, 0], 3))
+        self.assertEqual(testWeaving + 1, Weaving([2, 0, 0], 3))
+        self.assertEqual(criticalWeaving + 1, Weaving([0, 1, 0], 3))
+        addFive = Weaving([1, 2, 0], 3)
+        self.assertEqual(testWeaving + 5, addFive)
 
     # def test_possible_combinations(self):
     #     self.assertEqual(DigitSeries(123).possible_combinations(DigitSeries(300)), [DigitSeries(12300)])
-        # self.assertEqual(DigitSeries(123).possible_combinations(DigitSeries(200)), [DigitSeries(12003), DigitSeries(12030), DigitSeries(12300)])
+        # self.assertEqual(DigitSeries(123).possible_combinations(DigitSeries(200)),
+        #                  [DigitSeries(12003), DigitSeries(12030), DigitSeries(12300)])
 
 
 if __name__ == '__main__':
