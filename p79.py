@@ -1,5 +1,4 @@
 import unittest
-from sets import Set
 
 f = open('p79keylog.txt', 'r')
 
@@ -119,7 +118,9 @@ class Weaving(object):
         self.jumpList[spot] += amount
         while self.jumpList[spot] >= self.maxJumps:
             self.increment(1, spot + 1)
-            self.jumpList[spot] -= self.maxJumps
+            self.jumpList[spot] = self.jumpList[spot] - self.maxJumps
+            if len(self.jumpList) > spot+1:
+                self.jumpList[spot] += self.jumpList[spot + 1]
         return self
 
 
@@ -145,12 +146,16 @@ class TestFunctions(unittest.TestCase):
 
     def test_encoded_weaving(self):
         testWeaving = Weaving([1, 0, 0], 3)
-        criticalWeaving = Weaving([2, 0, 0], 3)
         self.assertEqual(testWeaving, Weaving([1, 0, 0], 3))
         self.assertEqual(testWeaving + 1, Weaving([2, 0, 0], 3))
-        self.assertEqual(criticalWeaving + 1, Weaving([0, 1, 0], 3))
-        addFive = Weaving([1, 2, 0], 3)
-        self.assertEqual(testWeaving + 5, addFive)
+        testWeaving = Weaving([2, 0, 0], 3)
+        self.assertEqual(testWeaving + 1, Weaving([1, 1, 0], 3))
+        onlyOne = Weaving([1, 0, 0], 3)
+        fiveAdded = Weaving([1, 1, 1], 3)
+        self.assertEqual(onlyOne + 5, fiveAdded)
+        largerWeaving = Weaving([1, 0, 0], 8)
+        largerWithFifteen = Weaving([3, 2, 0], 8)
+        self.assertEqual(largerWeaving + 15, largerWithFifteen)
 
     # def test_possible_combinations(self):
     #     self.assertEqual(DigitSeries(123).possible_combinations(DigitSeries(300)), [DigitSeries(12300)])
