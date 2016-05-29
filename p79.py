@@ -93,6 +93,7 @@ def remove_duplicate_entries(myList):
 
 
 class Weaving(object):
+    """Understands a particular combination of two digit series"""
     def __init__(self, jumpList, maxJumps):
         self.jumpList = jumpList
         self.maxJumps = maxJumps
@@ -117,7 +118,8 @@ class Weaving(object):
     def increment(self, amount, spot):
         self.jumpList[spot] += amount
         while self.jumpList[spot] >= self.maxJumps:
-            self.increment(1, spot + 1)
+            if len(self.jumpList) > spot+1:
+                self.increment(1, spot + 1)
             self.jumpList[spot] = self.jumpList[spot] - self.maxJumps
             if len(self.jumpList) > spot+1:
                 self.jumpList[spot] += self.jumpList[spot + 1]
@@ -156,6 +158,12 @@ class TestFunctions(unittest.TestCase):
         largerWeaving = Weaving([1, 0, 0], 8)
         largerWithFifteen = Weaving([3, 2, 0], 8)
         self.assertEqual(largerWeaving + 15, largerWithFifteen)
+        precycleWeaving = Weaving([4, 4], 5)
+        cycledWeaving = Weaving([0, 0], 5)
+        self.assertEqual(precycleWeaving + 1, cycledWeaving)
+        precycleWeaving = Weaving([4, 4], 5)
+        cycleFurther = Weaving([2, 1], 5)
+        self.assertEqual(precycleWeaving + 7, cycleFurther)
 
     # def test_possible_combinations(self):
     #     self.assertEqual(DigitSeries(123).possible_combinations(DigitSeries(300)), [DigitSeries(12300)])
