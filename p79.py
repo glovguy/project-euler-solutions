@@ -9,8 +9,7 @@ for line in f:
 
 class DigitSeries(object):
     """Understands a series of digits"""
-    def __init__(self, digits):
-        self.nums = int(digits)
+    def __init__(self, digits=''):
         self.digits = str(digits)
 
     def __hash__(self):
@@ -27,6 +26,9 @@ class DigitSeries(object):
 
     def __str__(self):
         return self.digits
+
+    def __len__(self):
+        return len(self.digits)
 
     def common_digits(self, other):
         commonDigitsSet = []
@@ -52,6 +54,18 @@ class DigitSeries(object):
             setOfShuffledDigitSeries = setOfShuffledDigitSeries | {DigitSeries(oneShuffle)}
         setOfShuffledDigitSeries = remove_duplicate_entries(setOfShuffledDigitSeries)
         return setOfShuffledDigitSeries
+
+    def shuf_in(self, other):
+        setOfShuffledDigitSeries = set()
+        baseWeaving = Weaving(len(other.digits) * [0], self.digits)
+        setOfWeavings = set(baseWeaving)
+        incrementWeaving = baseWeaving
+        incrementWeaving + 1
+        while baseWeaving != incrementWeaving:
+            setOfWeavings = setOfWeavings | {incrementWeaving}
+            incrementWeaving + 1
+        for eachWeaving in setOfWeavings:
+            eachWeaving.weave_in(self, other)
 
 
 class DigitPair(object):
@@ -125,6 +139,14 @@ class Weaving(object):
                 self.jumpList[spot] += self.jumpList[spot + 1]
         return self
 
+    def weave_in(self, base, insert):
+        output = DigitSeries()
+        for eachSpot in range(0, len(base)+1):
+            for eachJump in range(0, len(self.jumpList)):
+                if self.jumpList[eachJump] == eachSpot: output += DigitSeries(insert[eachJump])
+            if eachSpot < len(base): output += base[eachSpot]
+        return output
+
 
 class TestFunctions(unittest.TestCase):
 
@@ -133,20 +155,20 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(DigitSeries(620).common_digits(DigitSeries(762)), [DigitPair(0, 1), DigitPair(1, 2)])
         self.assertEqual(DigitSeries(129).common_digits(DigitSeries(620)), [DigitPair(1, 1)])
 
-    def test_shuffle_in(self):
-        self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(1)), set([DigitSeries(11)]))
-        self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(2)), set([DigitSeries(21), DigitSeries(12)]))
-        self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(2)), set([DigitSeries(12), DigitSeries(21)]))
-        self.assertEqual(DigitSeries(11).shuffle_in(DigitSeries(2)),
-                         set([DigitSeries(112), DigitSeries(121), DigitSeries(211)]))
-        self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(22)),
-                         set([DigitSeries(122), DigitSeries(212), DigitSeries(221)]))
+    # def test_shuffle_in(self):
+    #     self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(1)), set([DigitSeries(11)]))
+    #     self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(2)), set([DigitSeries(21), DigitSeries(12)]))
+    #     self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(2)), set([DigitSeries(12), DigitSeries(21)]))
+    #     self.assertEqual(DigitSeries(11).shuffle_in(DigitSeries(2)),
+    #                      set([DigitSeries(112), DigitSeries(121), DigitSeries(211)]))
+    #     self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(22)),
+    #                      set([DigitSeries(122), DigitSeries(212), DigitSeries(221)]))
 
     def test_remove_duplicate_entries(self):
         self.assertEqual(remove_duplicate_entries(set(['a', 'a'])), set(['a']))
         self.assertEqual(remove_duplicate_entries(set([DigitSeries(11), DigitSeries(11)])), set([DigitSeries(11)]))
 
-    def test_encoded_weaving(self):
+    def test_weaving_increment(self):
         testWeaving = Weaving([1, 0, 0], 3)
         self.assertEqual(testWeaving, Weaving([1, 0, 0], 3))
         self.assertEqual(testWeaving + 1, Weaving([2, 0, 0], 3))
@@ -164,6 +186,13 @@ class TestFunctions(unittest.TestCase):
         precycleWeaving = Weaving([4, 4], 5)
         cycleFurther = Weaving([2, 1], 5)
         self.assertEqual(precycleWeaving + 7, cycleFurther)
+
+    def test_weave_in(self):
+        basicWeaving = Weaving([0, 0], 2)
+        one = DigitSeries(12)
+        another = DigitSeries(45)
+        basicResult = DigitSeries(4512)
+        self.assertEqual(basicWeaving.weave_in(one, another), basicResult)
 
     # def test_possible_combinations(self):
     #     self.assertEqual(DigitSeries(123).possible_combinations(DigitSeries(300)), [DigitSeries(12300)])
