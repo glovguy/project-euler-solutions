@@ -7,46 +7,26 @@ for line in f:
     keylog.append(int(line))
 
 
-class DigitSeries(object):
+class DigitSeries(str):
     """Understands a series of digits"""
-    def __init__(self, digits=''):
-        self.digits = str(digits)
-
-    def __hash__(self):
-        return hash(frozenset(self.digits))
-
-    def __getitem__(self, item):
-        return DigitSeries(self.digits[item])
-
-    def __add__(self, other):
-        return DigitSeries(self.digits + other.digits)
-
-    def __eq__(self, other):
-        return self.digits == other.digits
-
-    def __str__(self):
-        return self.digits
-
-    def __len__(self):
-        return len(self.digits)
 
     def common_digits(self, other):
         commonDigitsSet = []
         for currenti in range(0, 3):
             for eachi in range(0, 3):
-                if self.digits[currenti] == other.digits[eachi]:
+                if self[currenti] == other[eachi]:
                     commonDigitsSet.append(DigitPair(currenti, eachi))
         return commonDigitsSet
 
     def slice(self, digitPair):
-        return DigitSeries(self.digits[:digitPair.a])
+        return DigitSeries(self[:digitPair.a])
 
     def possible_combinations(self, other):
         commonDigitSet = self.common_digits(other)
         combinations = [pairs.split_and_reassemble(self, other) for pairs in commonDigitSet]
         return combinations
 
-    def shuffle_in(self, other):
+    def old_shuf(self, other):
         setOfShuffledDigitSeries = set()
         spotsAvailable = len(self.digits) + 1
         for eachDigit in range(spotsAvailable):
@@ -55,17 +35,18 @@ class DigitSeries(object):
         setOfShuffledDigitSeries = remove_duplicate_entries(setOfShuffledDigitSeries)
         return setOfShuffledDigitSeries
 
-    def shuf_in(self, other):
+    def shuffle_in(self, other):
         setOfShuffledDigitSeries = set()
-        baseWeaving = Weaving(len(other.digits) * [0], self.digits)
-        setOfWeavings = set(baseWeaving)
+        baseWeaving = Weaving(len(other) * [0], self)
+        setOfWeavings = {baseWeaving}
         incrementWeaving = baseWeaving
         incrementWeaving + 1
         while baseWeaving != incrementWeaving:
             setOfWeavings = setOfWeavings | {incrementWeaving}
             incrementWeaving + 1
         for eachWeaving in setOfWeavings:
-            eachWeaving.weave_in(self, other)
+            setOfShuffledDigitSeries = setOfShuffledDigitSeries | {eachWeaving.weave_in(self, other)}
+        return setOfShuffledDigitSeries
 
 
 class DigitPair(object):
