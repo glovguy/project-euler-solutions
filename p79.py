@@ -143,7 +143,7 @@ class Weaving(object):
         output = DigitSeries()
         for eachSpot in range(0, len(base)+1):
             for eachJump in range(0, len(self.jumpList)):
-                if self.jumpList[eachJump] == eachSpot: output += DigitSeries(insert[eachJump])
+                if self.jumpList[::-1][eachJump] == eachSpot: output += DigitSeries(insert[eachJump])
             if eachSpot < len(base): output += base[eachSpot]
         return output
 
@@ -188,11 +188,17 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(precycleWeaving + 7, cycleFurther)
 
     def test_weave_in(self):
-        basicWeaving = Weaving([0, 0], 2)
+        basicWeaving = Weaving([0, 0], 3)
         one = DigitSeries(12)
         another = DigitSeries(45)
         basicResult = DigitSeries(4512)
         self.assertEqual(basicWeaving.weave_in(one, another), basicResult)
+        simpleWeaving = Weaving([1, 1], 3)
+        simpleResult = DigitSeries(1452)
+        self.assertEqual(simpleWeaving.weave_in(one, another), simpleResult)
+        complicatedWeaving = Weaving([2, 1], 3)
+        complicatedResult = DigitSeries(1425)
+        self.assertEqual(complicatedWeaving.weave_in(one, another), complicatedResult)
 
     # def test_possible_combinations(self):
     #     self.assertEqual(DigitSeries(123).possible_combinations(DigitSeries(300)), [DigitSeries(12300)])
