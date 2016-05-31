@@ -25,10 +25,10 @@ class DigitSeries(str):
         baseWeaving = Weaving(len(other) * [0], len(self)+1)
         setOfWeavings = {baseWeaving}
         incrementWeaving = Weaving(list(baseWeaving.jumpList), int(baseWeaving.maxJumps))
-        incrementWeaving + 1
+        incrementWeaving += 1
         while baseWeaving.jumpList != incrementWeaving.jumpList:
             setOfWeavings = setOfWeavings | {Weaving(list(incrementWeaving.jumpList), int(incrementWeaving.maxJumps))}
-            incrementWeaving + 1
+            incrementWeaving += 1
         for eachWeaving in setOfWeavings:
             setOfShuffledDigitSeries = setOfShuffledDigitSeries | {eachWeaving.weave_in(self, other)}
         return setOfShuffledDigitSeries
@@ -93,8 +93,8 @@ class Weaving(object):
         return strRep
 
     def __add__(self, num):
-        output = Weaving(self.jumpList, self.maxJumps)
-        [output.increment(1, 0) for x in range(0, num)]
+        output = Weaving(list(self.jumpList), int(self.maxJumps))
+        [output.increment(1, 0) for _ in range(0, num)]
         return output
 
     def increment(self, amount, spot):
