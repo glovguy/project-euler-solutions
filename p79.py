@@ -1,11 +1,5 @@
 import unittest
 
-f = open('p79keylog.txt', 'r')
-
-keylog = []
-for line in f:
-    keylog.append(int(line))
-
 
 class DigitSeries(str):
     """Understands a series of digits"""
@@ -26,23 +20,14 @@ class DigitSeries(str):
         combinations = [pairs.split_and_reassemble(self, other) for pairs in commonDigitSet]
         return combinations
 
-    def old_shuf(self, other):
-        setOfShuffledDigitSeries = set()
-        spotsAvailable = len(self.digits) + 1
-        for eachDigit in range(spotsAvailable):
-            oneShuffle = self.digits[:eachDigit] + other.digits + self.digits[eachDigit:]
-            setOfShuffledDigitSeries = setOfShuffledDigitSeries | {DigitSeries(oneShuffle)}
-        setOfShuffledDigitSeries = remove_duplicate_entries(setOfShuffledDigitSeries)
-        return setOfShuffledDigitSeries
-
     def shuffle_in(self, other):
         setOfShuffledDigitSeries = set()
-        baseWeaving = Weaving(len(other) * [0], self)
+        baseWeaving = Weaving(len(other) * [0], len(self)+1)
         setOfWeavings = {baseWeaving}
-        incrementWeaving = baseWeaving
+        incrementWeaving = Weaving(list(baseWeaving.jumpList), int(baseWeaving.maxJumps))
         incrementWeaving + 1
-        while baseWeaving != incrementWeaving:
-            setOfWeavings = setOfWeavings | {incrementWeaving}
+        while baseWeaving.jumpList != incrementWeaving.jumpList:
+            setOfWeavings = setOfWeavings | {Weaving(list(incrementWeaving.jumpList), int(incrementWeaving.maxJumps))}
             incrementWeaving + 1
         for eachWeaving in setOfWeavings:
             setOfShuffledDigitSeries = setOfShuffledDigitSeries | {eachWeaving.weave_in(self, other)}
@@ -107,8 +92,10 @@ class Weaving(object):
         strRep += '(' + str(self.maxJumps) + ')'
         return strRep
 
-    def __add__(self, other):
-        return self.increment(other, 0)
+    def __add__(self, num):
+        output = Weaving(self.jumpList, self.maxJumps)
+        [output.increment(1, 0) for x in range(0, num)]
+        return output
 
     def increment(self, amount, spot):
         self.jumpList[spot] += amount
@@ -136,25 +123,30 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(DigitSeries(620).common_digits(DigitSeries(762)), [DigitPair(0, 1), DigitPair(1, 2)])
         self.assertEqual(DigitSeries(129).common_digits(DigitSeries(620)), [DigitPair(1, 1)])
 
-    # def test_shuffle_in(self):
-    #     self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(1)), set([DigitSeries(11)]))
-    #     self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(2)), set([DigitSeries(21), DigitSeries(12)]))
-    #     self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(2)), set([DigitSeries(12), DigitSeries(21)]))
-    #     self.assertEqual(DigitSeries(11).shuffle_in(DigitSeries(2)),
-    #                      set([DigitSeries(112), DigitSeries(121), DigitSeries(211)]))
-    #     self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(22)),
-    #                      set([DigitSeries(122), DigitSeries(212), DigitSeries(221)]))
+    def test_shuffle_in(self):
+        self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(1)), set([DigitSeries(11)]))
+        self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(2)), set([DigitSeries(21), DigitSeries(12)]))
+        self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(2)), set([DigitSeries(12), DigitSeries(21)]))
+        self.assertEqual(DigitSeries(11).shuffle_in(DigitSeries(2)),
+                         set([DigitSeries(112), DigitSeries(121), DigitSeries(211)]))
+        self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(22)),
+                         set([DigitSeries(122), DigitSeries(212), DigitSeries(221)]))
 
     def test_remove_duplicate_entries(self):
         self.assertEqual(remove_duplicate_entries(set(['a', 'a'])), set(['a']))
         self.assertEqual(remove_duplicate_entries(set([DigitSeries(11), DigitSeries(11)])), set([DigitSeries(11)]))
+
+    def test_weaving_equality(self):
+        self.assertEqual(Weaving([0, 0], 3), Weaving([0, 0], 3))
+        self.assertNotEqual(Weaving([0, 0], 3), Weaving([1, 0], 3))
+        self.assertNotEqual(Weaving([0, 0], 2), Weaving([0, 0], 3))
 
     def test_weaving_increment(self):
         testWeaving = Weaving([1, 0, 0], 3)
         self.assertEqual(testWeaving, Weaving([1, 0, 0], 3))
         self.assertEqual(testWeaving + 1, Weaving([2, 0, 0], 3))
         testWeaving = Weaving([2, 0, 0], 3)
-        self.assertEqual(testWeaving + 1, Weaving([1, 1, 0], 3))
+        self.assertEqual(testWeaving+1, Weaving([1, 1, 0], 3))
         onlyOne = Weaving([1, 0, 0], 3)
         fiveAdded = Weaving([1, 1, 1], 3)
         self.assertEqual(onlyOne + 5, fiveAdded)
@@ -167,6 +159,9 @@ class TestFunctions(unittest.TestCase):
         precycleWeaving = Weaving([4, 4], 5)
         cycleFurther = Weaving([2, 1], 5)
         self.assertEqual(precycleWeaving + 7, cycleFurther)
+        lowMaxJumpsWeaving = Weaving([0, 0], 2)
+        lowMaxJumpIncremented = Weaving([1, 0], 2)
+        self.assertEqual(lowMaxJumpsWeaving + 1, lowMaxJumpIncremented)
 
     def test_weave_in(self):
         basicWeaving = Weaving([0, 0], 3)
@@ -189,3 +184,9 @@ class TestFunctions(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main(verbosity=1)
+
+# f = open('p79keylog.txt', 'r')
+#
+# keylog = []
+# for line in f:
+#     keylog.append(int(line))
