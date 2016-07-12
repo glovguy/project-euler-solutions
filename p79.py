@@ -124,6 +124,8 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(DigitSeries(123).possible_combinations(DigitSeries(300)), set([DigitSeries(12300)]))
         self.assertEqual(DigitSeries(123).possible_combinations(DigitSeries(200)),
                          set([DigitSeries(12003), DigitSeries(12030), DigitSeries(12300)]))
+        self.assertEqual(DigitSeries(33).possible_combinations(DigitSeries(33)),
+                         set([DigitSeries(33), DigitSeries(333), DigitSeries(3333)]))
 
     def test_common_digits(self):
         self.assertEqual(DigitSeries(729).common_digits(DigitSeries(316)), set())
@@ -188,9 +190,10 @@ class TestFunctions(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main(verbosity=1)
-
-# f = open('p79keylog.txt', 'r')
-#
-# keylog = []
-# for line in f:
-#     keylog.append(int(line))
+    ## Import file
+    # f = open('p79keylog.txt', 'r')
+    # keylog = []
+    # for line in f:
+    #     keylog.append(DigitSeries(int(line)))
+    # print keylog
+    # keylog.pop(0)
