@@ -6,8 +6,8 @@ class DigitSeries(str):
 
     def common_digits(self, other):
         commonDigitsSet = set()
-        for currenti in range(0, 3):
-            for eachi in range(0, 3):
+        for currenti in range(0, len(self)):
+            for eachi in range(0, len(other)):
                 if self[currenti] == other[eachi]:
                     commonDigitsSet.add(DigitPair(currenti, eachi))
         return commonDigitsSet
@@ -58,6 +58,9 @@ class DigitPair(object):
         sharedDigit = DigitSeries(digitSeriesA[self.a])
         suffix = DigitSeries(digitSeriesA[self.a+1:]).shuffle_in(DigitSeries(digitSeriesB[self.b+1:]))
         return [DigitSeries(pre + sharedDigit + suf) for pre in prefix for suf in suffix]
+
+    def is_compatible(self, other):
+        return (self.a < other.a and self.b < other.b) or (self.a > other.a and self.b > other.b)
 
 
 def remove_duplicate_entries(myList):
@@ -125,12 +128,14 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(DigitSeries(123).possible_combinations(DigitSeries(200)),
                          set([DigitSeries(12003), DigitSeries(12030), DigitSeries(12300)]))
         self.assertEqual(DigitSeries(33).possible_combinations(DigitSeries(33)),
-                         set([DigitSeries(33), DigitSeries(333), DigitSeries(3333)]))
+                         set([DigitSeries(33), DigitSeries(333)]))
 
     def test_common_digits(self):
         self.assertEqual(DigitSeries(729).common_digits(DigitSeries(316)), set())
         self.assertEqual(DigitSeries(620).common_digits(DigitSeries(762)), set([DigitPair(0, 1), DigitPair(1, 2)]))
         self.assertEqual(DigitSeries(129).common_digits(DigitSeries(620)), set([DigitPair(1, 1)]))
+        self.assertEqual(DigitSeries(33).common_digits(DigitSeries(33)),
+                         set([DigitPair(0, 0), DigitPair(0, 1), DigitPair(1, 1)]))
 
     def test_shuffle_in(self):
         self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(1)), set([DigitSeries(11)]))
@@ -186,6 +191,11 @@ class TestFunctions(unittest.TestCase):
         complicatedWeaving = Weaving([2, 1], 3)
         complicatedResult = DigitSeries(1425)
         self.assertEqual(complicatedWeaving.weave_in(one, another), complicatedResult)
+
+    def test_is_compatible(self):
+        self.assertEqual(DigitPair(0, 0).is_compatible(DigitPair(0, 1)), False)
+        self.assertEqual(DigitPair(0, 0).is_compatible(DigitPair(1, 1)), True)
+        self.assertEqual(DigitPair(1, 1).is_compatible(DigitPair(0, 0)), True)
 
 
 if __name__ == '__main__':
