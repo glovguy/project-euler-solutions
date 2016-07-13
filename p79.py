@@ -9,15 +9,15 @@ class DigitSeries(str):
         for currenti in range(0, len(self)):
             for eachi in range(0, len(other)):
                 if self[currenti] == other[eachi]:
-                    commonDigitsSet.add(DigitPair(currenti, eachi))
-        return commonDigitsSet
+                    commonDigitsSet.add(Slice(currenti, eachi))
+        return Dice(commonDigitsSet)
 
     def slice(self, digitPair):
         return DigitSeries(self[:digitPair.a])
 
     def possible_combinations(self, other):
-        commonDigitSet = self.common_digits(other)
-        combinations = set([x for pairs in commonDigitSet for x in pairs.split_and_reassemble(self, other)])
+        commonDice = self.common_digits(other)
+        combinations = set([x for pairs in commonDice for x in pairs.split_and_reassemble(self, other)])
         return combinations
 
     def shuffle_in(self, other):
@@ -30,21 +30,20 @@ class DigitSeries(str):
         incrementWeaving = Weaving(list(baseWeaving.jumpList), int(baseWeaving.maxJumps))
         incrementWeaving += 1
         while baseWeaving.jumpList != incrementWeaving.jumpList:
-            setOfWeavings = setOfWeavings | {Weaving(list(incrementWeaving.jumpList), int(incrementWeaving.maxJumps))}
+            weavingToAdd = Weaving(list(incrementWeaving.jumpList), int(incrementWeaving.maxJumps))
+            setOfWeavings = setOfWeavings | {weavingToAdd}
             incrementWeaving += 1
         for eachWeaving in setOfWeavings:
             setOfShuffledDigitSeries = setOfShuffledDigitSeries | {eachWeaving.weave_in(self, other)}
         return setOfShuffledDigitSeries
 
 
-class DigitPair(object):
+class Slice(object):
     """Understands a pair of digits"""
 
-    def __init__(self, first, second):
-        self.a = int(first)
-        self.b = int(second)
-
-    "Might consider getting rid of this class if this doesn't have any other methods."
+    def __init__(self, *pair):
+        self.a = int(pair[0])
+        self.b = int(pair[1])
 
     def __eq__(self, other):
         return (self.a == other.a and self.b == other.b) or \
@@ -63,18 +62,37 @@ class DigitPair(object):
         return (self.a < other.a and self.b < other.b) or (self.a > other.a and self.b > other.b)
 
 
-def remove_duplicate_entries(myList):
-    outputList = set()
-    for eachItem in myList:
-        if eachItem not in outputList:
-            outputList = outputList | {eachItem}
-    return outputList
+class Dice(object):
+    """Understands multiple slices"""
 
-# def is_compatible(firstCommonDigit, secondCommonDigit):
-#     if firstCommonDigit[0] == secondCommonDigit[0] or firstCommonDigit[1] == secondCommonDigit[1]:
-#         return False
-#     firstSlope = firstCommonDigit[1] - firstCommonDigit[0]
-#     secondSlope = secondCommonDigit[1] - secondCommonDigit[0]
+    def __init__(self, *slices):
+        self.slices = self.remove_duplicate_slices(slices)
+        self.count = len(self.slices)/2
+
+    def __eq__(self, other):
+        return (self.count == other.count) and \
+               (self.slices == other.slices)
+
+    def __hash__(self):
+        return hash(self.count)
+
+    def __str__(self):
+        return str([(str(x.a) + str(x.b) + '~') for x in self.slices])
+
+    def remove_duplicate_slices(self, myList):
+        outputList = list()
+        for each in myList:
+            if each not in outputList:
+                outputList.append(each)
+        return outputList
+
+
+def remove_duplicate_entries(mySet):
+    outputSet = set()
+    for each in mySet:
+        if each not in outputSet:
+            outputSet = outputSet | {each}
+    return outputSet
 
 
 class Weaving(object):
@@ -127,15 +145,16 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(DigitSeries(123).possible_combinations(DigitSeries(300)), set([DigitSeries(12300)]))
         self.assertEqual(DigitSeries(123).possible_combinations(DigitSeries(200)),
                          set([DigitSeries(12003), DigitSeries(12030), DigitSeries(12300)]))
-        self.assertEqual(DigitSeries(33).possible_combinations(DigitSeries(33)),
-                         set([DigitSeries(33), DigitSeries(333)]))
+        # self.assertEqual(DigitSeries(33).possible_combinations(DigitSeries(33)),
+        #                  set([DigitSeries(33), DigitSeries(333)]))
 
     def test_common_digits(self):
         self.assertEqual(DigitSeries(729).common_digits(DigitSeries(316)), set())
-        self.assertEqual(DigitSeries(620).common_digits(DigitSeries(762)), set([DigitPair(0, 1), DigitPair(1, 2)]))
-        self.assertEqual(DigitSeries(129).common_digits(DigitSeries(620)), set([DigitPair(1, 1)]))
+        self.assertEqual(DigitSeries(620).common_digits(DigitSeries(762)),
+                         set([Slice(0, 1), Slice(1, 2)]))
+        self.assertEqual(DigitSeries(129).common_digits(DigitSeries(620)), set([Slice(1, 1)]))
         self.assertEqual(DigitSeries(33).common_digits(DigitSeries(33)),
-                         set([DigitPair(0, 0), DigitPair(0, 1), DigitPair(1, 1)]))
+                         set([Slice(0, 0), Slice(0, 1), Slice(1, 1)]))
 
     def test_shuffle_in(self):
         self.assertEqual(DigitSeries(1).shuffle_in(DigitSeries(1)), set([DigitSeries(11)]))
@@ -150,7 +169,9 @@ class TestFunctions(unittest.TestCase):
 
     def test_remove_duplicate_entries(self):
         self.assertEqual(remove_duplicate_entries(set(['a', 'a'])), set(['a']))
-        self.assertEqual(remove_duplicate_entries(set([DigitSeries(11), DigitSeries(11)])), set([DigitSeries(11)]))
+        self.assertEqual(remove_duplicate_entries(set([DigitSeries(11), DigitSeries(11)])),
+                         set([DigitSeries(11)]))
+        self.assertEqual
 
     def test_weaving_equality(self):
         self.assertEqual(Weaving([0, 0], 3), Weaving([0, 0], 3))
@@ -193,9 +214,14 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(complicatedWeaving.weave_in(one, another), complicatedResult)
 
     def test_is_compatible(self):
-        self.assertEqual(DigitPair(0, 0).is_compatible(DigitPair(0, 1)), False)
-        self.assertEqual(DigitPair(0, 0).is_compatible(DigitPair(1, 1)), True)
-        self.assertEqual(DigitPair(1, 1).is_compatible(DigitPair(0, 0)), True)
+        self.assertEqual(Slice(0, 0).is_compatible(Slice(0, 1)), False)
+        self.assertEqual(Slice(0, 0).is_compatible(Slice(1, 1)), True)
+        self.assertEqual(Slice(1, 1).is_compatible(Slice(0, 0)), True)
+
+    def test_dice(self):
+        self.assertEqual(Dice(Slice(0, 1)), Dice(Slice(0, 1)))
+        self.assertNotEqual(Dice(Slice(0, 1)), Dice(Slice(1, 0)))
+        self.assertEqual(Dice(Slice(0, 1)), Dice(Slice(0, 1), Slice(0, 1)))
 
 
 if __name__ == '__main__':
