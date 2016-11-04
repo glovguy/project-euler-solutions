@@ -62,4 +62,6 @@ target/
 .ipynb_checkpoints
 
 # pyCharm
-.idea/*
+.idea
+
+.DS_Store
