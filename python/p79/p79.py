@@ -79,6 +79,9 @@ class Dice(object):
     def __str__(self):
         return str([(str(x.a) + str(x.b) + '~') for x in self.slices])
 
+    def __iter__(self):
+        pass
+
     def remove_duplicate_slices(self, myList):
         outputList = list()
         for each in myList:
