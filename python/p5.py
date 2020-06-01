@@ -1,35 +1,27 @@
-from tqdm import trange
+'''2520 is the smallest number that can be divided by each of the numbers from 1 to 10 without any remainder.
 
-testUntil = 2**20
-EvenlyDivisibleBy = 20
-
-
-def binary_digit_to_encoded_factor(binaryDigit):
-    encodedFactor = 1
-    lengthOfBinaryString = len(str(bin(binaryDigit)))-2
-    for iter in range(1, lengthOfBinaryString+1):
-        if binary_number_has_1_in_spot(binaryNum=binaryDigit,spot=iter):
-            encodedFactor *= (iter+1)
-    return encodedFactor
+What is the smallest positive number that is evenly divisible by all of the numbers from 1 to 20?'''
 
 
-def binary_number_has_1_in_spot(binaryNum, spot):
-    return bin(binaryNum)[len(str(bin(binaryNum))) - spot] == str(1)
+def factorial(num):
+    fctr = 1
+    for i in range(1, num):
+        fctr *= i
+    return fctr
 
 
-def the_answer_is(answer):
-    print "\nAnswer:"
-    print answer
-    print "is evenly divisible by " + str(EvenlyDivisibleBy)
-    print "as well as every number lower"
-    quit()
+def meets_criteria(num):
+    for n in range(2,20):
+        if num%n != 0:
+            return False
+    return True
 
 
-for binaryDigit in trange(1, testUntil+1):
-    for eachDivisor in range(1, EvenlyDivisibleBy+1):
-        if binary_digit_to_encoded_factor(binaryDigit) % eachDivisor != 0:
-            break
-        elif eachDivisor == EvenlyDivisibleBy:
-            the_answer_is(binary_digit_to_encoded_factor(binaryDigit))
-    pass
-print "No answer found"
+def smallest_divisible_by_20():
+    upperBounds = factorial(20)
+    for i in range(2520, upperBounds, 20):
+        if meets_criteria(i):
+            return i
+
+
+print(smallest_divisible_by_20())
