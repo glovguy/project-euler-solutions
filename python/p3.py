@@ -11,11 +11,6 @@ def is_prime(num):
     return True
 
 
-def largest_prime_factor(num):
-    primes = prime_factors(num)
-    return primes[len(primes)-1]
-
-
 def prime_factors(num):
     if is_prime(num):
         return [num]
@@ -25,4 +20,6 @@ def prime_factors(num):
             return [*prime_factors(n), *prime_factors(num/n)]
 
 
-print(largest_prime_factor(600851475143))
+primes = prime_factors(600851475143)
+print('Primes: ', primes)
+print('Largest: ', max(primes))
